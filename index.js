@@ -54,7 +54,7 @@ app.post('/postAllCountryNav', async (req, res) => {
     const diffNav = formatDiff(cmpPrevDay);
     const diffPercentage = formatDiff(percentageChange);
 
-    const tweetText = `【ｅＭＡＸＩＳ Ｓｌｉｍ 全世界株式（オール・カントリー）】\n基準価額: ${nav}円\n前日比 ${diffNav}円（${diffPercentage}%）\n#オルカン #投資信託 #NISA`;
+    const tweetText = `【eMAXIS Slim 全世界株式（オール・カントリー）】\n基準価額: ${nav}円\n前日比 ${diffNav}円（${diffPercentage}%）\n#オルカン #投資信託 #NISA`;
 
     await postToX(tweetText);
     console.log(tweetText);
