@@ -1,0 +1,6 @@
+# Node.js の依存関係
+node_modules/
+.DS_Store
+
+# 他のビルド関連のファイルやディレクトリ
+memo.md

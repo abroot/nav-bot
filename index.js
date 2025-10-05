@@ -27,7 +27,8 @@ async function fetchNav() {
   return {
     nav: dataset.nav,
     cmpPrevDay: dataset.cmp_prev_day,
-    percentageChange: dataset.percentage_change
+    percentageChange: dataset.percentage_change,
+    baseDate: dataset.base_date
   };
 }
 
@@ -46,15 +47,24 @@ function formatDiff(diff) {
   return diff > 0 ? `+${diff}` : `${diff}`; // 0 or negative の場合はそのまま
 }
 
+function formatDate(yyyymmdd) {
+  if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd; // 想定外フォーマットならそのまま返す
+  const year = yyyymmdd.slice(0, 4);
+  const month = parseInt(yyyymmdd.slice(4, 6), 10);
+  const day = parseInt(yyyymmdd.slice(6, 8), 10);
+  return `${year}年${month}月${day}日`;
+}
+
 // --- Webhookエンドポイント ---
 app.post('/postAllCountryNav', async (req, res) => {
   console.log("/postAllCountryNav received request.");
   try {
-    const { nav, cmpPrevDay, percentageChange } = await fetchNav();
+    const { nav, cmpPrevDay, percentageChange, baseDate } = await fetchNav();
     const diffNav = formatDiff(cmpPrevDay);
     const diffPercentage = formatDiff(percentageChange);
+    const referenceDate = formatDate(baseDate); 
 
-    const tweetText = `【eMAXIS Slim 全世界株式（オール・カントリー）】\n基準価額: ${nav}円\n前日比 ${diffNav}円（${diffPercentage}%）\n#オルカン #投資信託 #NISA`;
+    const tweetText = `【eMAXIS Slim 全世界株式（オール・カントリー）】\n基準価額: ${nav}円\n前日比: ${diffNav}円（${diffPercentage}%）\n基準日: ${referenceDate}\n#オルカン #投資信託 #NISA`;
 
     await postToX(tweetText);
     console.log(tweetText);
