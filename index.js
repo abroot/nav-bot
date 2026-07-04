@@ -28,7 +28,8 @@ async function fetchNav() {
     nav: dataset.nav,
     cmpPrevDay: dataset.cmp_prev_day,
     percentageChange: dataset.percentage_change,
-    baseDate: dataset.base_date
+    baseDate: dataset.base_date,
+    navMaxFull: dataset.nav_max_full
   };
 }
 
@@ -55,16 +56,49 @@ function formatDate(yyyymmdd) {
   return `${year}年${month}月${day}日`;
 }
 
+function toNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function buildTweetText({ nav, cmpPrevDay, percentageChange, baseDate, navMaxFull }) {
+  const diffNavValue = toNumber(cmpPrevDay);
+  const diffNav = formatDiff(cmpPrevDay);
+  const diffPercentage = formatDiff(percentageChange);
+  const referenceDate = formatDate(baseDate);
+  const currentNav = toNumber(nav);
+  const recordHigh = toNumber(navMaxFull);
+  const diffEmoji = diffNavValue !== null && diffNavValue < 0 ? "📉" : "📈";
+  const isRecordHigh =
+    currentNav !== null &&
+    recordHigh !== null &&
+    currentNav > recordHigh;
+
+  const lines = [];
+
+  if (isRecordHigh) {
+    lines.push("🎉 過去最高値更新！");
+    lines.push("");
+  }
+
+  lines.push("【eMAXIS Slim 全世界株式（オール・カントリー）】");
+  lines.push("");
+  lines.push(`💰 基準価額: ${nav}円`);
+  lines.push(`${diffEmoji} 前日比: ${diffNav}円（${diffPercentage}%）`);
+  lines.push(`📅 基準日: ${referenceDate}`);
+  lines.push("");
+  lines.push("#オルカン #投資信託 #NISA");
+
+  return lines.join("\n");
+}
+
 // --- Webhookエンドポイント ---
 app.post('/postAllCountryNav', async (req, res) => {
   console.log("/postAllCountryNav received request.");
   try {
-    const { nav, cmpPrevDay, percentageChange, baseDate } = await fetchNav();
-    const diffNav = formatDiff(cmpPrevDay);
-    const diffPercentage = formatDiff(percentageChange);
-    const referenceDate = formatDate(baseDate); 
-
-    const tweetText = `【eMAXIS Slim 全世界株式（オール・カントリー）】\n基準価額: ${nav}円\n前日比: ${diffNav}円（${diffPercentage}%）\n基準日: ${referenceDate}\n#オルカン #投資信託 #NISA`;
+    const navData = await fetchNav();
+    const tweetText = buildTweetText(navData);
 
     await postToX(tweetText);
     console.log(tweetText);
