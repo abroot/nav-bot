@@ -29,7 +29,7 @@ async function fetchNav() {
     cmpPrevDay: dataset.cmp_prev_day,
     percentageChange: dataset.percentage_change,
     baseDate: dataset.base_date,
-    navMaxFull: dataset.nav_max_full
+    navMaxFullDt: dataset.nav_max_full_dt
   };
 }
 
@@ -62,18 +62,13 @@ function toNumber(value) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
-function buildTweetText({ nav, cmpPrevDay, percentageChange, baseDate, navMaxFull }) {
+function buildTweetText({ nav, cmpPrevDay, percentageChange, baseDate, navMaxFullDt }) {
   const diffNavValue = toNumber(cmpPrevDay);
   const diffNav = formatDiff(cmpPrevDay);
   const diffPercentage = formatDiff(percentageChange);
   const referenceDate = formatDate(baseDate);
-  const currentNav = toNumber(nav);
-  const recordHigh = toNumber(navMaxFull);
   const diffEmoji = diffNavValue !== null && diffNavValue < 0 ? "📉" : "📈";
-  const isRecordHigh =
-    currentNav !== null &&
-    recordHigh !== null &&
-    currentNav > recordHigh;
+  const isRecordHigh = baseDate && navMaxFullDt && baseDate === navMaxFullDt;
 
   const lines = [];
 
